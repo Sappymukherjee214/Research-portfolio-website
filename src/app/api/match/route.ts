@@ -52,8 +52,9 @@ YOU MUST ONLY OUTPUT RAW JSON:
       });
     }
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error in /api/match:", err);
-    return NextResponse.json({ error: `Gemini Error: ${err.message || "Unknown error"}` }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Gemini Error: ${msg}` }, { status: 500 });
   }
 }

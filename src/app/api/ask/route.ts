@@ -64,9 +64,9 @@ ${projectsContext}
 
     return NextResponse.json({ answer });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in /api/ask:", error);
-    const errorMessage = error.message || "Unknown error";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Gemini Error: ${errorMessage}. Please check your GEMINI_API_KEY and Quota.` },
       { status: 500 }

@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     // Diagnostic call: Try to get model info
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
     
     // We don't perform a full listing to avoid complicated SDK types, 
     // instead we just verify the key can initialize a model.

@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
     }
 
     const systemInstructions = `You are a Collaboration Matcher AI for Saptarshi Mukherjee's research portfolio.
-Saptarshi's Research Statement: \${researchStatement}
-Saptarshi's Expertise: \${expertise.join(", ")}
+Saptarshi's Research Statement: ${researchStatement}
+Saptarshi's Expertise: ${expertise.join(", ")}
 
 The user will provide you with their background or project idea. 
 You must calculate a highly accurate "Synergy Score" (0-100%) based entirely on how well their background aligns with Saptarshi's robust computer vision / multimodal AI / deep learning background.

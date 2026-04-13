@@ -34,7 +34,7 @@ You MUST strictly format your response exactly like this JSON:
 Do not use markdown blocks like \`\`\`json. Just output the raw JSON object.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: profile,
       config: {
         systemInstruction: systemInstructions,

@@ -6,7 +6,7 @@ import { researchStatement, expertise } from "@/lib/data";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Helper function for exponential backoff retries
-async function generateWithRetry(model: GenerativeModel, prompt: string, retries = 3, delay = 2000) {
+async function generateWithRetry(model: GenerativeModel, prompt: string, retries = 3, delay = 2000): Promise<string> {
   for (let i = 0; i < retries; i++) {
     try {
       const result = await model.generateContent(prompt);
@@ -23,6 +23,7 @@ async function generateWithRetry(model: GenerativeModel, prompt: string, retries
       throw error; // If not 503 or last retry, rethrow
     }
   }
+  return "";
 }
 
 export async function POST(req: Request) {

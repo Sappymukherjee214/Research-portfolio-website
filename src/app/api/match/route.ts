@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { expertise, researchStatement } from "@/lib/data";
 
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: NextRequest) {
   try {
-    if (!apiKey) {
+    if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: "Gemini API key not configured." }, { status: 500 });
     }
 
@@ -18,45 +17,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Profile description is required." }, { status: 400 });
     }
 
-    const systemInstructions = `You are a Collaboration Matcher AI for Saptarshi Mukherjee's research portfolio.
+    const systemInstruction = `You are a Collaboration Matcher AI for Saptarshi Mukherjee's research portfolio.
 Saptarshi's Research Statement: ${researchStatement}
 Saptarshi's Expertise: ${expertise.join(", ")}
 
 The user will provide you with their background or project idea. 
-You must calculate a highly accurate "Synergy Score" (0-100%) based entirely on how well their background aligns with Saptarshi's robust computer vision / multimodal AI / deep learning background.
-If they mention completely unrelated fields (like agriculture or basic web dev), give a low score (e.g. 10-20%). If they mention PyTorch, CV, deepfakes, or RAG, give a high score (80-99%).
+Calculate a "Synergy Score" (0-100%) based on how well it aligns with Saptarshi's robust computer vision / multimodal AI / deep learning background.
 
-You MUST strictly format your response exactly like this JSON:
+YOU MUST ONLY OUTPUT RAW JSON:
 {
   "score": 85,
-  "reason": "You both specialize in computer vision and deep learning architectures like ViT."
-}
-Do not use markdown blocks like \`\`\`json. Just output the raw JSON object.`;
+  "reason": "Detailed explanation here."
+}`;
 
-    const response = await ai.models.generateContent({
+    const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
-      contents: profile,
-      config: {
-        systemInstruction: systemInstructions,
-        temperature: 0.2, // Low temp for more analytical/consistent scoring
-      }
+      systemInstruction: systemInstruction
     });
 
+    const result = await model.generateContent(profile);
+    const response = await result.response;
+    let text = response.text();
+
+    // Clean up potential markdown formatting from AI output
+    text = text.replace(/```json|```/gi, "").trim();
+
     try {
-      const parsed = JSON.parse(response.text || "{}");
+      const parsed = JSON.parse(text);
       return NextResponse.json(parsed);
     } catch {
-      // Fallback if model fails to format JSON
       return NextResponse.json({
         score: 50,
-        reason: "Unable to calculate exact match score, but there may be overlap."
+        reason: "Alignment detected, but structured parsing failed."
       });
     }
 
   } catch (err: unknown) {
-    if (err instanceof Error) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Unknown backend error" }, { status: 500 });
+    console.error("Error in /api/match:", err);
+    return NextResponse.json({ error: "Internal AI processing error." }, { status: 500 });
   }
 }

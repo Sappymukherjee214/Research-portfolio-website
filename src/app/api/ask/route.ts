@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { retrieveRelevantProjects } from "@/lib/retriever";
 import { researchStatement, expertise } from "@/lib/data";
 
-// Initialize Gemini client
-// IMPORTANT: You need to set GEMINI_API_KEY in your .env.local file.
-// If GEMINI_API_KEY is not set, this will throw an error or we need to handle it gracefully.
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "", 
-});
+// Initialize Gemini client with the official SDK
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
@@ -21,15 +17,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Check for API key (so we don't crash mysteriously if user forgot)
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "Gemini API key is missing. Please add it to your .env.local file." },
+        { error: "Gemini API key is missing in server environment." },
         { status: 500 }
       );
     }
 
-    // 2. Retrieve context from our local RAG array
+    // 1. Retrieve context
     const relevantProjects = retrieveRelevantProjects(question, 3);
     
     let projectsContext = relevantProjects.map((p, idx) => `Project ${idx + 1}: ${p.title}\nDescription: ${p.description}`).join('\n\n');
@@ -38,43 +33,41 @@ export async function POST(req: Request) {
       projectsContext = "No specific match found, but standard expertise applies.";
     }
 
-    // 3. Construct the flexible prompt
+    // 2. Construct the system instruction
     const systemInstruction = `
 You are a highly capable AI research assistant representing me on my portfolio website. 
 Your primary role is to intelligently discuss and explain my research portfolio. However, you are also fully capable of answering ANY general questions related to research, academia, AI, or related fields.
 
 Guidelines:
 - For questions about me or my work: Rely on the provided context below.
-- For general research questions: Use your extensive pre-trained knowledge to provide accurate, insightful, and comprehensive answers.
-- Maintain a highly professional and academic tone at all times.
-- If the query is completely unrelated to research, AI, or my portfolio, you may politely steer the conversation back to research topics.
+- For general research questions: Use your pre-trained knowledge to provide accurate answers.
+- Maintain a highly professional and academic tone.
 
-Context about my work (use for portfolio-specific queries):
+Context about my work:
 My Research Statement: ${researchStatement}
 My Core Expertise: ${expertise.join(", ")}
 
-Relevant Portfolio Projects to consider:
+Relevant Portfolio Projects:
 ${projectsContext}
 `;
 
-    // 4. Call LLM
-    const response = await ai.models.generateContent({
+    // 3. Initialize model with system instruction
+    const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
-      contents: question,
-      config: {
-        systemInstruction,
-        temperature: 0.2, // Low temperature for factual consistency
-      }
+      systemInstruction: systemInstruction
     });
 
-    const answer = response.text || "No generated response.";
+    // 4. Generate content
+    const result = await model.generateContent(question);
+    const response = await result.response;
+    const answer = response.text();
 
     return NextResponse.json({ answer });
 
   } catch (error) {
     console.error("Error in /api/ask:", error);
     return NextResponse.json(
-      { error: "An error occurred while generating the answer. Make sure the API key is correct." },
+      { error: "AI generation failed. Please verify the GEMINI_API_KEY in your deployment dashboard." },
       { status: 500 }
     );
   }

@@ -12,8 +12,8 @@ async function generateWithRetry(model: GenerativeModel, prompt: string, retries
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
-    } catch (error: any) {
-      const isStatus503 = error.message?.includes("503") || error.message?.includes("Service Unavailable");
+    } catch (error: unknown) {
+      const isStatus503 = error instanceof Error && (error.message.includes("503") || error.message.includes("Service Unavailable"));
       if (isStatus503 && i < retries - 1) {
         console.log(`Gemini 503 detected. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
         await new Promise(resolve => setTimeout(resolve, delay));

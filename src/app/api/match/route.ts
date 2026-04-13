@@ -11,8 +11,8 @@ async function generateWithRetry(model: GenerativeModel, prompt: string, retries
       const result = await model.generateContent(prompt);
       const response = await result.response;
       return response.text();
-    } catch (error: any) {
-      const isStatus503 = error.message?.includes("503") || error.message?.includes("Service Unavailable");
+    } catch (error: unknown) {
+      const isStatus503 = error instanceof Error && (error.message.includes("503") || error.message.includes("Service Unavailable"));
       if (isStatus503 && i < retries - 1) {
         await new Promise(res => setTimeout(res, delay));
         delay *= 2;

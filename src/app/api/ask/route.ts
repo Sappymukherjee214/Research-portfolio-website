@@ -11,7 +11,7 @@ async function generateWithRetry(model: GenerativeModel, prompt: string, retries
     try {
       const result = await model.generateContent(prompt);
       const response = await result.response;
-      return response.text();
+      return response.text() || "";
     } catch (error: unknown) {
       const isStatus503 = error instanceof Error && (error.message.includes("503") || error.message.includes("Service Unavailable"));
       if (isStatus503 && i < retries - 1) {

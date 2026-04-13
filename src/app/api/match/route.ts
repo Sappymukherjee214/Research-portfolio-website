@@ -19,6 +19,7 @@ async function generateWithRetry(model: GenerativeModel, prompt: string, retries
         continue;
       }
       throw error;
+    }
   }
   return "";
 }

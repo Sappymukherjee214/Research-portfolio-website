@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
 import { expertise, researchStatement } from "@/lib/data";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Helper for retries
-async function generateWithRetry(model: any, prompt: string, retries = 3, delay = 2000) {
+async function generateWithRetry(model: GenerativeModel, prompt: string, retries = 3, delay = 2000) {
   for (let i = 0; i < retries; i++) {
     try {
       const result = await model.generateContent(prompt);

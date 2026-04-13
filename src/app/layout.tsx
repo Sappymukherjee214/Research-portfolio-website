@@ -6,8 +6,15 @@ import ClientRegistry from "@/components/ClientRegistry";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Saptarshi Mukherjee | ML/CV Research",
-  description: "Research portfolio focusing on Robust Multimodal Intelligence under Real-World Uncertainty.",
+  title: "Saptarshi Mukherjee | Robust ML & Computer Vision Research",
+  description: "Researcher specializing in Robust Machine Learning, Computer Vision, and Multimodal AI. Exploring model limits under noise and uncertainty.",
+  keywords: ["Machine Learning", "Computer Vision", "Robustness", "Multimodal AI", "Deepfakes", "RAG", "Research Portfolio"],
+  authors: [{ name: "Saptarshi Mukherjee" }],
+  openGraph: {
+    title: "Saptarshi Mukherjee | Research Portfolio",
+    description: "Robust Multimodal Intelligence under Real-World Uncertainty.",
+    type: "website",
+  }
 };
 
 export default function RootLayout({

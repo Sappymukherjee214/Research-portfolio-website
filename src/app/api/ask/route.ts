@@ -64,10 +64,11 @@ ${projectsContext}
 
     return NextResponse.json({ answer });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in /api/ask:", error);
+    const errorMessage = error.message || "Unknown error";
     return NextResponse.json(
-      { error: "AI generation failed. Please verify the GEMINI_API_KEY in your deployment dashboard." },
+      { error: `Gemini Error: ${errorMessage}. Please check your GEMINI_API_KEY and Quota.` },
       { status: 500 }
     );
   }

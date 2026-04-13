@@ -52,8 +52,8 @@ YOU MUST ONLY OUTPUT RAW JSON:
       });
     }
 
-  } catch (err: unknown) {
+  } catch (err: any) {
     console.error("Error in /api/match:", err);
-    return NextResponse.json({ error: "Internal AI processing error." }, { status: 500 });
+    return NextResponse.json({ error: `Gemini Error: ${err.message || "Unknown error"}` }, { status: 500 });
   }
 }
